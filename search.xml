@@ -1,6 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>SLAM with Deep Learning - Summary</title>
+    <url>/2020/03/06/DL-VSLAM-List/</url>
+    <content><![CDATA[<p>A brief study list of some deep-learning-based vision SLAM methods.</p>
+<a id="more"></a>
+
+<h1 id="Ideas-of-using-deep-neural-network-in-SLAM"><a href="#Ideas-of-using-deep-neural-network-in-SLAM" class="headerlink" title="Ideas of using deep neural network in SLAM"></a>Ideas of using deep neural network in SLAM</h1><ul>
+<li>Use CNN for image depth estimation</li>
+<li>DNN to replace some traditional optimization problem, end to end solution, trained to perform better without loop closure, or reduce the load on loop closure part</li>
+<li>Online learning and adaptation: how to generalize network power to unseen view</li>
+<li>Self-tuning SLAM</li>
+</ul>
+<h1 id="Semantic-stereo-visual-odometry-Weiming’s-thesis"><a href="#Semantic-stereo-visual-odometry-Weiming’s-thesis" class="headerlink" title="Semantic stereo visual odometry (Weiming’s thesis)"></a>Semantic stereo visual odometry (Weiming’s thesis)</h1><p>Use CNN classification to recognize feature points as objects, and build a geometric map with semantic meanings for certain landmarks / objects.</p>
+<p>Inspiration: semantic 3D reconstruction for map building, use classified objects as feature points</p>
+<h1 id="DeepVO"><a href="#DeepVO" class="headerlink" title="DeepVO"></a>DeepVO</h1><h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>  End-to-end learning with deep Recurrent Convolutional Neural Networks<br>  Raw RGB image -&gt; pose<br>  CNN for image feature representation, RNN for pose learning</p>
+<p>  Limits for traditional methods: need lots of engineering efforts to tune, scaling problem requires extra or prior knowledge</p>
+<p>  Why need sequential data learning: VO is heavily rely on geometric features, dynamic motions among changes of images, rather than a single frame, so CNN is not enough</p>
+<p>  How to generalise to new environment: using geometric feature representation learnt by CNN</p>
+<h2 id="2-Related-work"><a href="#2-Related-work" class="headerlink" title="2. Related work"></a>2. Related work</h2><p>Two main types: geometry based and learning based</p>
+<ul>
+<li>Geometry based:<ul>
+<li>Sparse feature based: outliers, noises cause drifts over time. Computational expensive. Keyframe based: PTAM, ORBSLAM.</li>
+<li>Direct methods: photometric consistency, DTAM, SVO,</li>
+</ul>
+</li>
+<li>Learning based: Using optical flow to train KNN (K nearest neighbour), GP (gaussian process) and SVM (support vector machines) for monocular VO [15,16,17].<ul>
+<li>DL based methods: handle large scale, big data, non-linear high dimensional data</li>
+</ul>
+</li>
+</ul>
+<h2 id="3-RCNN-method"><a href="#3-RCNN-method" class="headerlink" title="3. RCNN method"></a>3. RCNN method</h2>]]></content>
+      <categories>
+        <category>SLAM</category>
+        <category>Vision SLAM</category>
+      </categories>
+      <tags>
+        <tag>machine learning</tag>
+        <tag>SLAM</tag>
+        <tag>VSLAM</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>A little corner</title>
     <url>/2020/03/06/AboutMyLove/</url>
     <content><![CDATA[<p>True treasure is usually hidden in a inconspicuous corner …</p>
