@@ -1,22 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>KittiDataset</title>
-    <url>/2020/03/05/KittiDataset/</url>
-    <content><![CDATA[]]></content>
+    <title>Touching the Trend of Automotive Software Architecture</title>
+    <url>/2020/03/06/AutomotiveSWArchIdeas/</url>
+    <content><![CDATA[<p>A trend of going both modulation and centralization.<br>Inspiration from Tesla, autosar, Nvidia, ROS and SPA2</p>
+]]></content>
       <categories>
-        <category>Dataset</category>
-        <category>AD Dataset</category>
+        <category>Automotive</category>
+        <category>Automotive Software</category>
       </categories>
       <tags>
-        <tag>Dataset</tag>
+        <tag>Software</tag>
       </tags>
   </entry>
   <entry>
-    <title>BaiduApollo</title>
+    <title>Baidu Apollo Project</title>
     <url>/2020/03/05/BaiduApollo/</url>
     <content><![CDATA[]]></content>
       <categories>
+        <category>Automotive</category>
         <category>Autonomous Driving Platform</category>
       </categories>
       <tags>
@@ -25,7 +27,7 @@
       </tags>
   </entry>
   <entry>
-    <title>MachineLearningStudyList</title>
+    <title>Machine Learning Study List</title>
     <url>/2020/03/05/MachineLearningStudyList/</url>
     <content><![CDATA[]]></content>
       <categories>
@@ -36,21 +38,42 @@
       </tags>
   </entry>
   <entry>
-    <title>WaymoDataset</title>
-    <url>/2020/03/05/WaymoDataset/</url>
-    <content><![CDATA[]]></content>
-      <categories>
-        <category>Dataset</category>
-        <category>AD Dataset</category>
-      </categories>
-      <tags>
-        <tag>Dataset</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Argoai Dataset</title>
-    <url>/2020/03/05/ArgoaiDataset/</url>
-    <content><![CDATA[]]></content>
+    <title>Autonomous Driving Dataset Summary</title>
+    <url>/2020/03/05/ADDataset/</url>
+    <content><![CDATA[<p>Useful dataset collected for autonomous vehicle algorithm (perception, path planning and control). Mainly sensor raw dataset, some with labels.<br>Used for research, benchmarking, tranining, etc.</p>
+<a id="more"></a>
+<h1 id="Database1"><a href="#Database1" class="headerlink" title="Database1"></a>Database1</h1><ul>
+<li>KITTI Dataset</li>
+<li>Argoai Dataset</li>
+<li>Waymo Open Dataset<h2 id="Table-list"><a href="#Table-list" class="headerlink" title="Table list"></a>Table list</h2><table>
+<thead>
+<tr>
+<th>Dataset</th>
+<th align="center">Attribute1</th>
+<th align="right">Attribute2</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>KITTI</td>
+<td align="center">right-aligned</td>
+<td align="right">$1600</td>
+</tr>
+<tr>
+<td>Argoai</td>
+<td align="center">centered</td>
+<td align="right">$12</td>
+</tr>
+<tr>
+<td>Waymo</td>
+<td align="center">are neat</td>
+<td align="right">$1</td>
+</tr>
+</tbody></table>
+</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ git <span class="built_in">clone</span> ...</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fun</span><span class="params">()</span>:</span></span><br><span class="line">  <span class="keyword">return</span> ok</span><br></pre></td></tr></table></figure>
+]]></content>
       <categories>
         <category>Dataset</category>
         <category>AD Dataset</category>
@@ -64,16 +87,12 @@
     <url>/2020/03/05/NvidiaDriveworksPlatform/</url>
     <content><![CDATA[]]></content>
       <categories>
+        <category>Automotive</category>
         <category>Autonomous Driving Platform</category>
       </categories>
       <tags>
         <tag>AD</tag>
         <tag>Nvidia</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>StartPage</title>
-    <url>/2020/03/05/StartPage/</url>
-    <content><![CDATA[]]></content>
   </entry>
 </search>
