@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Team Tesla VS Team Lidar</title>
+    <url>/2020/03/07/ADSolutionArch/</url>
+    <content><![CDATA[<p>Pure camera solution VS multi-sensor solution (heavily dependent on Lidar), which one is the correct way to go?</p>
+]]></content>
+      <categories>
+        <category>Automotive</category>
+        <category>Autonomous Driving</category>
+      </categories>
+      <tags>
+        <tag>sensors</tag>
+        <tag>AD</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>SLAM with Deep Learning - Summary</title>
     <url>/2020/03/06/DL-VSLAM-List/</url>
     <content><![CDATA[<p>A brief study list of some deep-learning-based vision SLAM methods.</p>
@@ -58,7 +72,7 @@
   <entry>
     <title>Touching the Trend of Automotive Software Architecture</title>
     <url>/2020/03/06/AutomotiveSWArchIdeas/</url>
-    <content><![CDATA[<p>A trend of going both modulation and centralization.<br>Inspiration from Tesla, autosar, Nvidia, ROS and SPA2</p>
+    <content><![CDATA[<p>A trend of going both modulation and centralization.<br>Inspiration from Tesla, autosar, Nvidia, ROS , android and SPA2</p>
 ]]></content>
       <categories>
         <category>Automotive</category>
@@ -97,38 +111,41 @@
     <url>/2020/03/05/ADDataset/</url>
     <content><![CDATA[<p>Useful dataset collected for autonomous vehicle algorithm (perception, path planning and control). Mainly sensor raw dataset, some with labels.<br>Used for research, benchmarking, tranining, etc.</p>
 <a id="more"></a>
-<h1 id="Database1"><a href="#Database1" class="headerlink" title="Database1"></a>Database1</h1><ul>
+<h1 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h1><ul>
 <li>KITTI Dataset</li>
 <li>Argoai Dataset</li>
-<li>Waymo Open Dataset<h2 id="Table-list"><a href="#Table-list" class="headerlink" title="Table list"></a>Table list</h2><table>
+<li>Waymo Open Dataset<h2 id="Dataset-Attributes-Comparison"><a href="#Dataset-Attributes-Comparison" class="headerlink" title="Dataset Attributes Comparison"></a>Dataset Attributes Comparison</h2><table>
 <thead>
 <tr>
 <th>Dataset</th>
-<th align="center">Attribute1</th>
-<th align="right">Attribute2</th>
+<th align="center">Scene for object tracking</th>
+<th align="right">Map data</th>
 </tr>
 </thead>
 <tbody><tr>
 <td>KITTI</td>
-<td align="center">right-aligned</td>
-<td align="right">$1600</td>
+<td align="center">22</td>
+<td align="right">Nan</td>
 </tr>
 <tr>
 <td>Argoai</td>
-<td align="center">centered</td>
-<td align="right">$12</td>
+<td align="center">113 (3D annotated)</td>
+<td align="right"><strong>HD map (2 cities)</strong></td>
 </tr>
 <tr>
 <td>Waymo</td>
 <td align="center">are neat</td>
-<td align="right">$1</td>
+<td align="right">Nan</td>
 </tr>
 </tbody></table>
 </li>
 </ul>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ git <span class="built_in">clone</span> ...</span><br></pre></td></tr></table></figure>
 <figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fun</span><span class="params">()</span>:</span></span><br><span class="line">  <span class="keyword">return</span> ok</span><br></pre></td></tr></table></figure>
-<p><img src="argoaisensorset.png" alt=""></p>
+
+<h1 id="Argoai-Dataset"><a href="#Argoai-Dataset" class="headerlink" title="Argoai Dataset"></a>Argoai Dataset</h1><p>Official website: <a href="https://www.argoverse.org/data.html" target="_blank" rel="noopener">https://www.argoverse.org/data.html</a><br>Github: <a href="https://github.com/argoai/argoverse-api" target="_blank" rel="noopener">https://github.com/argoai/argoverse-api</a></p>
+<p>Obviously the most unique part for Argoai dataset is the HD map data. It not only provides large amount of 3D annotated, well synced camera and lidar data, but also emphasis the importance of using HD map data in AD algorithm, and provides APIs to connect sensor perception data with the map data.</p>
+<p>Argoai also provides two baseline for <a href="https://github.com/alliecc/argoverse_baselinetracker" target="_blank" rel="noopener">3D object tracking</a> and <a href="https://github.com/jagjeet-singh/argoverse-forecasting" target="_blank" rel="noopener">trajectory forecasting</a>.<br><img src="argoaisensorset.png" alt=""></p>
 ]]></content>
       <categories>
         <category>Dataset</category>
