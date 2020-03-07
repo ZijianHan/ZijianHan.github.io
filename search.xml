@@ -128,6 +128,7 @@
 </ul>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ git <span class="built_in">clone</span> ...</span><br></pre></td></tr></table></figure>
 <figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fun</span><span class="params">()</span>:</span></span><br><span class="line">  <span class="keyword">return</span> ok</span><br></pre></td></tr></table></figure>
+<p><img src="argoaisensorset.png" alt=""></p>
 ]]></content>
       <categories>
         <category>Dataset</category>
