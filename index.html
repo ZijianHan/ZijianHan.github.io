@@ -193,6 +193,394 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://zijianhan.github.io/2020/05/02/UberMLInfrastructureForAD/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/zijian.jpg">
+      <meta itemprop="name" content="Zijian Han">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Way To Intelligence">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/05/02/UberMLInfrastructureForAD/" class="post-title-link" itemprop="url">UberMLInfrastructureForAD</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2020-05-02 08:37:33 / Modified: 08:32:30" itemprop="dateCreated datePublished" datetime="2020-05-02T08:37:33+02:00">2020-05-02</time>
+            </span>
+
+          
+            <span id="/2020/05/02/UberMLInfrastructureForAD/" class="post-meta-item leancloud_visitors" data-flag-title="UberMLInfrastructureForAD" title="Popular">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Popular: </span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <span>℃</span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine: </span>
+    
+    <a title="valine" href="/2020/05/02/UberMLInfrastructureForAD/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/05/02/UberMLInfrastructureForAD/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>title: Uber ATG’s ML Infrastructure and Version Control Platform Architecture<br>original post link: <a href="https://eng.uber.com/machine-learning-model-life-cycle-version-control/" target="_blank" rel="noopener">https://eng.uber.com/machine-learning-model-life-cycle-version-control/</a><br>Chinese version: <a href="https://mp.weixin.qq.com/s/yJzW3-RLC0d05vW2EqjY0w" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/yJzW3-RLC0d05vW2EqjY0w</a><br>Uber ATG: Advanced Technologies Group, developing self-driving vehicles technology.</p>
+<p>General introduction of contents: ML components, development life cycle, automating tool (VerCD - Ver continuous delivery)</p>
+<h2 id="Self-driving-vehicle-ML-model-components"><a href="#Self-driving-vehicle-ML-model-components" class="headerlink" title="Self-driving vehicle ML model components"></a>Self-driving vehicle ML model components</h2><p>Software components (tasks) that contains one or more ML models</p>
+<ul>
+<li>Perception: Object identification (types: vehicle, pedestrian, bicycle, etc.) and 3D localization.</li>
+<li>Prediction: Combine object detection results (type + localization) with HD maps, to perform object trajectory prediction in future n seconds in a given scene. The Prediction component allows the self-driving vehicle to anticipate where actors will most likely be located at various points in the future.</li>
+<li>Motion Planning:<ul>
+<li>Input:<ul>
+<li>self-driving vehicle’s destination</li>
+<li>the predicted trajectories of all actors in the scene</li>
+<li>the high definition map</li>
+<li>other mechanisms</li>
+</ul>
+</li>
+<li>Output: plan the path of the vehicle.</li>
+</ul>
+</li>
+<li>Control: Path following for motion planned path by controlling steering, brakes and accelerator.</li>
+</ul>
+<h2 id="ML-model-life-cycle"><a href="#ML-model-life-cycle" class="headerlink" title="ML model life cycle."></a>ML model life cycle.</h2><p>Training data source: sensor-equipped vehicles(Lidar, cameras, radar) in a wide variety of traffic situations.<br>Labeling work: location, shape, other attributes like object type, etc.<br>Model training: sufficient labeled training data + HD map<br>ML Model different layers: highest layer: ML applications, middle layer: common ML libraries such as TF and PyTorch, GPU acceleration.<br>Five-step life cycle for training and deployment of ML models:<br>[ATG_ML_platform_figure-lifecycle.png]</p>
+<h3 id="Data-ingestion"><a href="#Data-ingestion" class="headerlink" title="Data ingestion"></a>Data ingestion</h3><p>Data ingestion process: Select the logs intended to use and extract data from them.</p>
+<ol>
+<li><p>Data log selection and dividing: 75% training data, 15% testing data, 10% validation data. The pipeline used to select logs and split the data into 3 groups based on geographical location: GeoSplit.</p>
+</li>
+<li><p>Data extraction from logs (Using Petastorm, Uber ATG’s open source data accesss library for DL):<br>Data contents:</p>
+</li>
+</ol>
+<ul>
+<li>Images from the vehicle’s cameras</li>
+<li>LiDAR 3D point information</li>
+<li>Radar information</li>
+<li>The state of the vehicle, including location, speed, acceleration and heading</li>
+<li>Map information, such as the vehicle’s route and lanes it used</li>
+<li>Ground truth labels<br>Extraction process:</li>
+<li>extract data from multiple logs in parallel using Apache Spark (this way keeps the data in an optimized format by storing all info needed in GPUs memory after load from HDFS, so the training is efficient)</li>
+<li>save data log-by-log on HDFS<br>[ATG_ML_platform_figure-extraction.png] shows the extraction process running on CPU cluster.<br>(We use extracted data (including the images pictured here, along with other sensor data) to run distributed training using Horovod on the GPU cluster and save the data to HDFS.)</li>
+</ul>
+<h3 id="Data-validation"><a href="#Data-validation" class="headerlink" title="Data validation"></a>Data validation</h3><ol>
+<li>Run queries to pull: 1) the number of frames in a scene 2) the number of occurrences of the different label types.</li>
+<li>Compare results to previous data sets to see how conditions have changed. Further analysis needed if not as expected.</li>
+</ol>
+<h3 id="Model-training"><a href="#Model-training" class="headerlink" title="Model training"></a>Model training</h3><p>Distributed ML training system used: Horovod!</p>
+<ol>
+<li>Spread the training process on different GPUs with data parallelism as shown in figure below (same model trained on different GPUs with different parts of data). Each process performs forward and backword propagation independently.<br>[ATG_ML_platform_figure-modeltraining.png]</li>
+<li>Combine the parallel-trained model(knowledge distributing as I understand): using Horovod’s ring-allreduce algorithm to average gradients and disperse them to all work nodes without requiring a parameter server.</li>
+<li>Training verification: through TensorBoard, leveraging ML frameworks like TensorFlow and PyTorch.</li>
+</ol>
+<p>ML computing with hybrid approach: both in on-premise data centers powered by GPU and CPU clusters as well as in the cloud.</p>
+<ul>
+<li>on-premise data center: orchestrate training jobs using Peloton (<a href="https://eng.uber.com/resource-scheduler-cluster-management-peloton/" target="_blank" rel="noopener">https://eng.uber.com/resource-scheduler-cluster-management-peloton/</a>), to scales jobs to GPUs and CPUs.</li>
+<li>cloud-based training: using Kubernetes (<a href="https://kubernetes.io/" target="_blank" rel="noopener">https://kubernetes.io/</a>) to deploy and scale application containers across clusters.</li>
+</ul>
+<h3 id="Model-evaluation"><a href="#Model-evaluation" class="headerlink" title="Model evaluation"></a>Model evaluation</h3><p>Evaluate the performance on model itself (with model-specific metrics) and on entire system (with system metrics). Also use hardware metrics to evaluate the model running speed on hardware.</p>
+<ol>
+<li>Model-specific metrics<br>For example, Perception model: precision(correct detection rate) and recall(the proportion of the ground truth objects that model identified correctly).<br>For not performing well metrics, we adjust data pipeline by including similar cases(<a href="https://eng.uber.com/searchable-ground-truth-atg/" target="_blank" rel="noopener">https://eng.uber.com/searchable-ground-truth-atg/</a>) (data augmentation). But prevent overfitting.</li>
+<li>System metrics<br>Mainly safety and comfort measurement on overall vehicle motion, with large test set. Performed after model-specific metrics are well enough. Due to ML model dependencies, the system evaluation will give a comprehensive overview between components.</li>
+<li>Hardware metrics<br>Using ATG’s internal benchmarking system to profile a certain part of software, and evaluate how quick it will run on vehicle hardware.</li>
+</ol>
+<h3 id="Model-serving"><a href="#Model-serving" class="headerlink" title="Model serving"></a>Model serving</h3><p>Deploy the model on an inference engine in vehicle with continuous iteration, focusing on the part need to be improved learnt from model evaluation part.</p>
+<h2 id="Accelerating-ML-research-with-CI-and-CD"><a href="#Accelerating-ML-research-with-CI-and-CD" class="headerlink" title="Accelerating ML research with CI and CD"></a>Accelerating ML research with CI and CD</h2><p>Continuous integration and delivery (VerCD platform) will wrap and automate the 5-step ML model developing process to an end-to-end workflow, reduce errors and boost the speed.</p>
+<p>The VerCD platform is such a system that tracks dependencies between code, datasets and models throughout the workflow, starts with the dataset extraction stage, cover model training, and conclude with computing metrics.</p>
+<p>Why developed Uber’s own platform:</p>
+<ol>
+<li>DL models have deep dependencies and development complexity. Although open source tools like Kubeflow and TensorFlow Extended provide high-level orchestration to build dataset and train models, they are not well integrated, and do not fully enable CD and CI</li>
+<li>Traditional versioning and CD/CD tools like Git and Jenkins do not operate over ML artifacts.</li>
+</ol>
+<h3 id="The-need-for-agile-development-in-ML-workflows"><a href="#The-need-for-agile-development-in-ML-workflows" class="headerlink" title="The need for agile development in ML workflows"></a>The need for agile development in ML workflows</h3><p>The standard agile development process (<a href="https://en.wikipedia.org/wiki/Agile_software_development" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Agile_software_development</a>) in application for ML workflows (what do they mean for ML):</p>
+<ul>
+<li>version controlling:<br>allows the analysis of impact of a change on some part towards downstream dependencies, independently from one developer to another.</li>
+<li>dependency tracking<br>Dependency between data and results: adjustments to labels and raw data changes the nature of the dataset, which in turn affects training results. Moreover, the way of data extraction and model training code and configuration also affects the results. So the dependency tracking should tell that correct order: data extraction first then model building.</li>
+<li>continuous integration and continuous delivery:<br>the ML workflow involves code, data and models, of which only the first is handled by traditional software tools. Following figure illustrates some differences in workflow, and next figure shows the scope and complexity of system required to build a final ML artifact.<br>[ATG_ML_platform_figure-mlworkflow.png] The traditional continuous delivery cycle differs from that used for ML in that, instead of just building code and testing it, ML developers must also construct data sets, train models, and compute model metrics.<br>[ATG_ML_platform_figure-mlrequirementsforsystem.png] The final result of ML workflows is just a tiny artifact compared to all of the supporting systems and code (such as configuration, data collection, feature extraction, data verification, machine resource management, analysis tools, process management tools, serving infrastructure, and monitoring). (Source: Hidden Technical Debt in Machine Learning Systems. Used with permission.)</li>
+</ul>
+<h3 id="Deep-dependency-graphs-in-the-self-driving-domain"><a href="#Deep-dependency-graphs-in-the-self-driving-domain" class="headerlink" title="Deep dependency graphs in the self-driving domain"></a>Deep dependency graphs in the self-driving domain</h3><p>The deep dependency graph is a result of the layered architecture of self-driving software stack, where each layer provides a different ML function, shown in figure below. The dependency graph for an object detection model, shown on the left, and two other ML models, shown on the right, depicts code and configurations that are handled by version control systems (in green) and items that are not handled by version control (in grey).<br>[ATG_ML_platform_figure-dependencygraph.png]<br>3 ML layers:</p>
+<ul>
+<li>an object detection model whose input is raw sensor data,</li>
+<li>a path prediction model whose input is the set of objects detected by the object detection model,</li>
+<li>a planning model whose inputs are the outputs of the path prediction model.<br>Each layer shows on left involves generating 3 artifacts:</li>
+</ul>
+<ol>
+<li>A data set, composed of raw source data, bounding boxes around different objects in the source image data (i.e. labels), and the data set generation code.</li>
+<li>A trained model, which requires as input the data set artifact, the model training code, and configuration files governing model training.</li>
+<li>A metrics report, which requires as input the trained model artifact, the data set, and the metrics generation code.</li>
+</ol>
+<p>Such deep dependencies brings particular challenge for CD.</p>
+<h2 id="VerCD-for-Uber-ATG"><a href="#VerCD-for-Uber-ATG" class="headerlink" title="VerCD for Uber ATG"></a>VerCD for Uber ATG</h2><p>VerCD is a set of tools and microservices, to provide versioning and continuous delivery for Ml code and artifacts for Uber’s AD software. It’s a platform with well integration on other components to empower existing orchestrators and guarantee the smooth end-to-end ML workflow.</p>
+<p>VerCD offers a metadata service that tracks all dependencies of each ML compenents, include not only code but also data and model artifacts. This will ensure that ML artifacts are always reproducible and traceable for comparing new experiments against a historical baseline or track down bugs.</p>
+<h3 id="VerCD-system-architecture"><a href="#VerCD-system-architecture" class="headerlink" title="VerCD system architecture"></a>VerCD system architecture</h3><p>The platform considers both experimental(process functions to build datasets, train models and run metrics) and production workflow(CD/CD driven by an orchestrator). So it must have interface for both humans and machines, for which we chose a REST APU with Python library bindings, show as below 2 figures.<br>[ATG_ML_platform_figure-07.png] VerCD consists of a version and dependency metadata service, and an orchestrator service. We use stock frameworks such as Flask, SQLAlchemy, MySQL, and Jenkins but augment their functionality with ATG-specific integrations.</p>
+<p>VerCD is a set of separate microservices, architecture at Uber (<a href="https://eng.uber.com/building-tincup-microservice-implementation/" target="_blank" rel="noopener">https://eng.uber.com/building-tincup-microservice-implementation/</a>), where each microservice is responsible for a function, so the system can easily scale. For CD/CI workflow, it’s linear and fixed, while for experimental workflow it’s more flexible.</p>
+<h4 id="Version-and-Dependency-Metadata-Service"><a href="#Version-and-Dependency-Metadata-Service" class="headerlink" title="Version and Dependency Metadata Service"></a>Version and Dependency Metadata Service</h4><p>[ATG_ML_platform_figure-metadataservice.png]<br>The Version and Dependency Metadata Service has individual endpoints for data set building, model training, and metrics computation. The REST API is a Flask and SQLAlchemy app, backed by MySQL to hold the dependency metadata. The yellow API handlers and data access layers were designed for ATG-specific use cases.</p>
+<h4 id="Orchestrator-Service"><a href="#Orchestrator-Service" class="headerlink" title="Orchestrator Service"></a>Orchestrator Service</h4><p>[ATG_ML_platform_figure-orchestratorservice.png]<br>VerCD’s Orchestrator Service manages the workflow pipelines for building data sets, training models, and computing metrics. It is comprised of an off-the-shelf Jenkins distribution, augmented with our own ATG-specific integrations (yellow) that give the orchestrator the ability to interact with external ATG systems.</p>
+<h4 id="Example-workflow"><a href="#Example-workflow" class="headerlink" title="Example workflow"></a>Example workflow</h4><p>Workflow: dependencies of any dataset, model or metric builds are registered with VerCD, which manages the infomation in a database backend. Then use a stock Jenkins orchestrator to do regular builds, and augment the function by providing connectors and integration code so it can interpret dependency metadata and operate ATG-specific systems (like call to build a runtime for testing, interact with code repo, create images with DL or Apache Spark lib, replicating datasets in between data centers and cloud, etc.).</p>
+<p>For example: registering a new data set</p>
+<h3 id="Microservice-APIs"><a href="#Microservice-APIs" class="headerlink" title="Microservice APIs"></a>Microservice APIs</h3><h4 id="Data-set-service-API"><a href="#Data-set-service-API" class="headerlink" title="Data set service API"></a>Data set service API</h4><h4 id="Model-service-API"><a href="#Model-service-API" class="headerlink" title="Model service API"></a>Model service API</h4><h4 id="Metrics-service-API"><a href="#Metrics-service-API" class="headerlink" title="Metrics service API"></a>Metrics service API</h4><h3 id="Data-set-and-model-onboarding-and-results"><a href="#Data-set-and-model-onboarding-and-results" class="headerlink" title="Data set and model onboarding and results"></a>Data set and model onboarding and results</h3>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://zijianhan.github.io/2020/05/01/AILearningArchitecture/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/zijian.jpg">
+      <meta itemprop="name" content="Zijian Han">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Way To Intelligence">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/05/01/AILearningArchitecture/" class="post-title-link" itemprop="url">AI Platform Study</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-05-01 09:00:00" itemprop="dateCreated datePublished" datetime="2020-05-01T09:00:00+02:00">2020-05-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2020-05-02 08:40:08" itemprop="dateModified" datetime="2020-05-02T08:40:08+02:00">2020-05-02</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/AI/" itemprop="url" rel="index"><span itemprop="name">AI</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2020/05/01/AILearningArchitecture/" class="post-meta-item leancloud_visitors" data-flag-title="AI Platform Study" title="Popular">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Popular: </span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <span>℃</span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine: </span>
+    
+    <a title="valine" href="/2020/05/01/AILearningArchitecture/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/05/01/AILearningArchitecture/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>#</p>
+<p>The development of AI technology is growing at an amazing pace, while to implement them from research into production (as most of the companies are doing nowadays), the barrier or bottleneck lays in between has become more clear: lacking of software infrastructure to continuously integrate, deploy, and improve the AI software.  </p>
+<p>Why we need AI infrastructure:<br>As more machine learning platform released, the design and implementation of machine learning models becomes like just calling a function or using APIs. However the complete framework of an AI product should also need the AI infrastructure as the core part to scale up, which mainly focus on the DevOps that lots of AI researchers do not pay much attention to.<br>There are several headache issues we usually when building practical AI applications:</p>
+<ul>
+<li>computational resources are expensive</li>
+<li>integration is hard and un-efficient as different toolchains have different interface</li>
+<li>model training and turning (hyperparameter search) is difficult and time-consuming</li>
+</ul>
+<p>So I will try to read upon different kind of AI platform and framework and try to make a summary of various of framework, to gain a better understanding of the entire machine learning pipeline.</p>
+<h2 id="Determined-AI-AI-Infrastructure-goes-Open-Source"><a href="#Determined-AI-AI-Infrastructure-goes-Open-Source" class="headerlink" title="Determined AI - AI Infrastructure goes Open Source"></a>Determined AI - AI Infrastructure goes Open Source</h2><p>News link: <a href="https://determined.ai/blog/ai-infrastructure-for-everyone/" target="_blank" rel="noopener">https://determined.ai/blog/ai-infrastructure-for-everyone/</a><br>Platform product webpage: <a href="https://determined.ai/" target="_blank" rel="noopener">https://determined.ai/</a><br>Github opensource repo: <a href="https://github.com/determined-ai/determined" target="_blank" rel="noopener">https://github.com/determined-ai/determined</a></p>
+<p>Today I read about this deep learning training platform from Determined AI that helps to solve the DevOps headache for training models, share GPU resources and scale up the development.</p>
+<p>Determined AI is a deep learning training platform that tries to bridges the gap between deep learning tools like TensorFlow and PyTorch. It tries to boost the process of DL as shown in the figure [loop.png]</p>
+<p>The Determined Training Platform (<a href="https://determined.ai/developers/" target="_blank" rel="noopener">https://determined.ai/developers/</a>) tightly integrates following key features:</p>
+<ul>
+<li>High-performance distributed training: distrubuted training support built upon Horvod (distributed training framework), with optimization of twice the performance of Horvod. Distribute easily set-up without any additional changes to your model code, allows multiple users to seamlessly share the same GPU cluster.</li>
+<li>State-of-the-art hyperparameter search: based on research results [reference 12345]. 100x faster than standard search methods and 10x faster than Bayesian Optimization methods.</li>
+<li>DL tools for both individuals and teams: support experiment management with built-in experiment tracking, log management, metrics visualization, reproducibility, automatic fault tolerance for DL training jobs and dependency management.</li>
+<li>Flexible GPU scheduling: including dynamically resizing training jobs on-the-fly and automatic management of cloud resources on AWS and GCP</li>
+<li>Hardware-agnostic and integrated with the Open Source Ecosystem: support public cloud and on-prem infrastructure. Integrated with TensorBoard and GPU-powered Jupyter notebooks. See integrated tools diagram below:[determined-components.png]</li>
+</ul>
+<p>Most of the guidance can be found at Github page<br>Installation guidance: <a href="https://docs.determined.ai/latest/how-to/install-main.html" target="_blank" rel="noopener">https://docs.determined.ai/latest/how-to/install-main.html</a><br>Quick Start Guide: <a href="https://docs.determined.ai/latest/tutorials/quick-start.html" target="_blank" rel="noopener">https://docs.determined.ai/latest/tutorials/quick-start.html</a><br>Documentation: <a href="https://docs.determined.ai/latest/index.html" target="_blank" rel="noopener">https://docs.determined.ai/latest/index.html</a></p>
+
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://zijianhan.github.io/2020/03/23/LearningList/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/zijian.jpg">
+      <meta itemprop="name" content="Zijian Han">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Way To Intelligence">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/03/23/LearningList/" class="post-title-link" itemprop="url">LearningList</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2020-03-23 07:57:10 / Modified: 08:03:20" itemprop="dateCreated datePublished" datetime="2020-03-23T07:57:10+01:00">2020-03-23</time>
+            </span>
+
+          
+            <span id="/2020/03/23/LearningList/" class="post-meta-item leancloud_visitors" data-flag-title="LearningList" title="Popular">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Popular: </span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <span>℃</span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine: </span>
+    
+    <a title="valine" href="/2020/03/23/LearningList/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/03/23/LearningList/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>A TODO list for study.</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/03/23/LearningList/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="en">
     <link itemprop="mainEntityOfPage" href="http://zijianhan.github.io/2020/03/07/ADSolutionArch/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -910,112 +1298,12 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://zijianhan.github.io/2020/03/05/NvidiaDriveworksPlatform/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/zijian.jpg">
-      <meta itemprop="name" content="Zijian Han">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Way To Intelligence">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/03/05/NvidiaDriveworksPlatform/" class="post-title-link" itemprop="url">Nvidia DriveWorks Platform</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2020-03-05 20:25:05" itemprop="dateCreated datePublished" datetime="2020-03-05T20:25:05+01:00">2020-03-05</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-03-06 17:25:12" itemprop="dateModified" datetime="2020-03-06T17:25:12+01:00">2020-03-06</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Automotive/" itemprop="url" rel="index"><span itemprop="name">Automotive</span></a>
-                </span>
-                  , 
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Automotive/Autonomous-Driving-Platform/" itemprop="url" rel="index"><span itemprop="name">Autonomous Driving Platform</span></a>
-                </span>
-            </span>
-
-          
-            <span id="/2020/03/05/NvidiaDriveworksPlatform/" class="post-meta-item leancloud_visitors" data-flag-title="Nvidia DriveWorks Platform" title="Popular">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-eye"></i>
-              </span>
-              <span class="post-meta-item-text">Popular: </span>
-              <span class="leancloud-visitors-count"></span>
-            </span>
-            <span>℃</span>
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="fa fa-comment-o"></i>
-      </span>
-      <span class="post-meta-item-text">Valine: </span>
-    
-    <a title="valine" href="/2020/03/05/NvidiaDriveworksPlatform/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2020/03/05/NvidiaDriveworksPlatform/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
+  <nav class="pagination">
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
+  </nav>
 
 
 
@@ -1082,20 +1370,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">8</span>
+          <span class="site-state-item-count">11</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-count">11</span>
         <span class="site-state-item-name">categories</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-count">9</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
@@ -1138,13 +1426,13 @@
       <i class="fa fa-area-chart"></i>
     </span>
       <span class="post-meta-item-text">Symbols count total: </span>
-    <span title="Symbols count total">3k</span>
+    <span title="Symbols count total">17k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">Reading time total &asymp;</span>
-    <span title="Reading time total">3 mins.</span>
+    <span title="Reading time total">15 mins.</span>
 </div>
 
 <!--
